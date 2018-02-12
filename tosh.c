@@ -1,7 +1,7 @@
 /*
  * The Torero Shell (TOSH)
- *
- * Add your top-level comments here.
+ *COMP 310 group 11(?)
+ * Julia Cassella and Molly Strasser 
  */
 
 #include <stdlib.h>
