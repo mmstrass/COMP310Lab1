@@ -9,18 +9,19 @@
 #define MAXHIST 10   // max number of commands in history list
 
 /*
- * A struct to keep information one 
- * command in the history of command 
- * executed
+ * A struct to keep information one command in the history of 
+ * command executed
  */
-typedef struct {              
+struct HistoryEntry {              
     unsigned int cmd_num;
     char cmdline[MAXLINE]; // command line for this process
-} HistoryEntry;
+};
 
-int histSize();
-void addEntry(char new_cmd[MAXLINE]);
+// You can use "HistoryEntry" instead of "struct HistoryEntry"
+typedef struct HistoryEntry HistoryEntry;
+
+void add(char line[MAXLINE]);
+void isFull();
 void printHistory();
-int numToCmd(char *cmd);
-
+char *find(char *input);
 #endif
