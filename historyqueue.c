@@ -1,69 +1,123 @@
 /*
  * The Tiny Torero Shell (TTSH)
  *
- * This class sets up a data structure to
- * represent a circular queue which will 
- * be used to store the history of commands.
+ * This history queue is implemented using a circular queue
+ * It will store the 10  most recent calls from the ttsh 
+ * 
+ * Authors: Leah Sato and Julia Cassella
  */
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+#include "parse_args.h"
 #include "history_queue.h"
 
+//global variables for history queue state
+static int start = 0;
+static int next = 0;
+static int size = 0;
+static int next_unique = 0;
 static HistoryEntry history[MAXHIST]; 
 
-static int front = 0;
-static int rear = 0;
-static int cmd_count = 0;
 
-/*
- * Enables the '!num' syntax to execute
- * a command by the command number
+/**
+ * add method
+ * This will add an entry to our history queue
+ * @param line the command we will be adding
  */
-int numToCmd(char *cmd) {
-	unsigned int cmd_index = atoi(cmd);
-	for (int i = 0; i < MAXHIST; i++) { 
-		if (cmd_index == history[i].cmd_num) {
-			strcpy(cmd, history[i].cmdline);
-			return 1;
-		}
+void add(char line[MAXLINE]) { 
+	//create a new history entry
+	HistoryEntry *h = (HistoryEntry*) calloc(1, sizeof(HistoryEntry));
+	strncpy(h->cmdline, line, sizeof(h->cmdline));
+	
+	//assign a unique id to the command
+	h->cmd_num = next_unique;
+	next_unique += 1;
+	
+	//check if the queue is full and add accordingly 
+	if (size == MAXHIST) {
+		isFull();
 	}
-	return 0;
-}
-
-/*
- * Copies the users most recent command
- * into the circular queue while 
- * assiging each with a command number
- */
-void addEntry(char new_cmd[MAXLINE]) {
-	cmd_count++;
-
-	strcpy(history[rear].cmdline, new_cmd);
-	history[rear].cmd_num = cmd_count;
-
-	rear = (rear + 1) % MAXHIST;
-
-	if (cmd_count > MAXHIST) {
-		front = (front + 1) % MAXHIST;				
+	history[next] = *h;
+	if (size != MAXHIST) {
+		size += 1;
+		next += 1;
 	}
 }
 
 /*
- * Loops through the history queue printing
- * the most recent 10 commands
+ *
+ * IsFUll method will check if the hisory queue is full
+ * It will then reajust the start and next accordingly
+ */
+void isFull() {
+	//the next one will be put in at the current start
+	next = start;
+	if (start == MAXHIST - 1) {
+		start = 0;
+	}
+	//increment the start by 1
+	else {
+		start += 1;
+	}
+}
+
+/*
+ *
+ * Print History Method
+ * Loop through the history queue and print
+ * The least recently used commands to the most recently used
+ *
  */
 void printHistory() {
-	int j = front;
-	for (int i = 0; i < MAXHIST; i++) { // loop through MAXHIST number of times
-		if (strcmp("", history[j].cmdline) != 0) {
-			fprintf(stdout, "%u\t%s", history[j].cmd_num, history[j].cmdline);
+	
+	//loop through the queue
+	int i;
+	for (i = 0; i < size; i++) {
+		int n;
+		//check what the index is compared to the start index
+		if (start + i < MAXHIST)  { 
+	   		n = start + i;
 		}
-		j++;
-		if (j == MAXHIST) {
-			j = 0;
+		else {
+			n = (start + i) - MAXHIST;
 		}
+		printf("%d\t%s\n", history[n].cmd_num, history[n].cmdline);
 	}
+}
+
+char *find(char *input) {
+
+	//check to see if the number is in history 
+	//take out the exclamation point
+	char *compare = strtok(input, "!");
+
+	int entry = atoi(compare);
+	//parse to int
+	if(entry == 0 && (strcmp(compare, "0") != 0)) {
+		return "ERROR";
+	}
+	
+	//check through history
+	int i;
+	
+	for (i = 0; i < size; i++) {
+		int n;
+		//check what the index is compared to the start index
+		if (start + i < MAXHIST)  { 
+	   		n = start + i;
+		}
+		else {
+			n = (start + i) - MAXHIST;
+		}
+		
+		if(history[n].cmd_num == (unsigned int) entry) {
+			return history[n].cmdline;
+		}
+
+	}
+
+	return "NOT FOUND";
+
+	
 }
