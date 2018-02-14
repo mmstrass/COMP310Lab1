@@ -1,14 +1,13 @@
 CC = gcc
-CFLAGS = -g -lreadline -Wall #-Werror
-TARGETS = tosh siesta
+CFLAGS = -g -Wall -Wextra -Werror -std=c11
+TARGETS = ttsh siesta
 
-# add to this list if you create new .c source files
-TOSH_SRC = tosh.c
+TTSH_SRC = ttsh.c history_queue.c
 
 all: $(TARGETS)
 
-ttsh: $(TOSH_SRC) 
-	$(CC) $(CFLAGS) -o $@ $(TOSH_SRC)
+ttsh: $(TTSH_SRC) history_queue.h parse_args.o
+	$(CC) $(CFLAGS) -o $@ $(TTSH_SRC) parse_args.o
 
 siesta: siesta.c
 	$(CC) $(CFLAGS) -o $@ $^
